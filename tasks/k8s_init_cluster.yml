@@ -46,8 +46,8 @@
 - name: 'Set join command for worker nodes'
   ansible.builtin.set_fact:
     k8s_join_command: "{{ k8s_worker_join_token['stdout'] }}"
-  delegate_to: 'k8s_member'
-  run_once: true
+  delegate_to: "{{ k8s_member }}"
+  delegate_facts: true
   no_log: "{{ not k8s_debug }}"
   loop: "{{ groups[k8s_cluster_group + '_worker'] | default([]) }}"
   loop_control:
@@ -56,8 +56,8 @@
 - name: 'Set join command for control-plane nodes'
   ansible.builtin.set_fact:
     k8s_join_command: "{{ k8s_control_plane_join_token['stdout'] }}"
-  delegate_to: 'k8s_controller'
-  run_once: true
+  delegate_to: "{{ k8s_controller }}"
+  delegate_facts: true
   no_log: "{{ not k8s_debug }}"
   loop: "{{ groups[k8s_cluster_group + '_control_plane'] | default([]) }}"
   loop_control:
