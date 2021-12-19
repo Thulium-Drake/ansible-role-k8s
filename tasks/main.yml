@@ -4,6 +4,9 @@
     that:
       - k8s_role in k8s_allowed_roles
 
+- name: 'Collect running services'
+  ansible.builtin.service_facts:
+
 - name: 'Ensure kernel modules'
   community.general.modprobe:
     name: "{{ kmod }}"
@@ -62,6 +65,7 @@
     - '30000-32767/tcp'  # NodePort services
   loop_control:
     loop_var: 'port'
+  when: ansible_facts['services']['firewalld.service']['status'] == 'enabled'
 
 - name: 'Ensure IP masquerading'
   ansible.posix.firewalld:
