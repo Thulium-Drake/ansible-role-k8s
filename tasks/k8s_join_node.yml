@@ -1,0 +1,6 @@
+---
+- name: 'Join cluster'
+  ansible.builtin.command: "{{ k8s_join_command }}"
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  when: not kubelet_conf['stat']['exists']

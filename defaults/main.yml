@@ -1,0 +1,26 @@
+---
+k8s_setup_repositories: true   # Set to false if repositories are provided by other means (such as Foreman/Satellite)
+k8s_version: '1.22'            # Which Kubernetes version to prepare/install
+
+k8s_role: 'control-plane'      # control-plane or worker
+k8s_cluster_group: 'k8s_cluster'     # Inventory group that contains all nodes of this cluster
+
+k8s_registries: []
+#   - name: 'example-registry'
+#     url: 'https://registry.example.com:5000'
+#     username: 'RobotRock'
+#     password: 'AroundtheKube'
+#     client_certificate: '/etc/ssl/certs/k8s-client.pem'
+#     client_certificate_key: '/etc/ssl/private/k8s-client.key'
+#     ca_certificate: '/etc/ssl/certs/example_ca.pem'
+#     validate_certs: true
+
+## Kubeadm init arguments
+k8s_image_repository: ''             # URL of the private registry to pull images from at initialization
+k8s_apiserver_advertise_address: ''  # Instead of using the NIC that has the default gateway, use this IP
+                                     # to advertise the k8s API server on
+k8s_pod_network_cidr: ''             # If set, override the default pod network range used
+k8s_control_plane_endpoint: ''       # Required if using multiple control-plane nodes.
+                                     # Set to a load balanced URI, e.g. k8s-cluster.example.com:6443
+
+k8s_debug: false  # Set to true to log tasks that handle sensitive data

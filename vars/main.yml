@@ -1,0 +1,6 @@
+---
+k8s_allowed_roles:
+  - 'control-plane'
+  - 'worker'
+
+k8s_kubeadm_init_args: ''

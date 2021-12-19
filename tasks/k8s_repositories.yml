@@ -1,0 +1,30 @@
+---
+- name: 'Ensure Yum repositories'
+  ansible.builtin.yum_repository:
+    name: "{{ repo['name'] }}"
+    description: "{{ repo['description'] }}"
+    baseurl: "{{ repo['baseurl'] }}"
+    exclude: "{{ repo['exclude'] | default(omit) }}"
+    gpgcheck: true
+    gpgkey: "{{ repo['gpgkey'] }}"
+    enabled: true
+    state: 'present'
+  loop:
+    - name: 'kubernetes'
+      description: 'Kubernetes'
+      baseurl: 'https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch'
+      gpgkey: 'https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg'
+      exclude:  # Upgrading the Kubernetes packages requires special care
+        - 'kubeadm'
+        - 'kubectl'
+        - 'kubelet'
+    - name: 'libcontainers'
+      description: 'Stable Releases of Upstream github.com/containers packages (CentOS_8)'
+      baseurl: 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/'
+      gpgkey: 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/repodata/repomd.xml.key'
+    - name: 'cri-o'
+      description: 'Stable Releases of Upstream github.com/containers cri-o packages (CentOS_8)'
+      baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_version }}/CentOS_8/"
+      gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_version }}/CentOS_8/repodata/repomd.xml.key"
+  loop_control:
+    loop_var: 'repo'

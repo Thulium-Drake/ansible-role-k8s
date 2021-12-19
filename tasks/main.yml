@@ -1,0 +1,146 @@
+---
+- name: 'Validate input'
+  ansible.builtin.assert:
+    that:
+      - k8s_role in k8s_allowed_roles
+
+- name: 'Ensure kernel modules'
+  community.general.modprobe:
+    name: "{{ kmod }}"
+    state: 'present'
+  loop:
+    - 'br_netfilter'
+    - 'overlay'
+  loop_control:
+    loop_var: 'kmod'
+
+- name: 'Ensure kernel modules at bootup'
+  ansible.builtin.copy:
+    dest: '/etc/modules-load.d/k8s.conf'
+    mode: 0444
+    content: |
+      # Managed by Ansible, YOUR CHANGES WILL BE LOST!
+      overlay
+      br_netfilter
+
+- name: 'Ensure sysctl'
+  ansible.builtin.sysctl:
+    name: "{{ sysctl_key }}"
+    value: 1
+    reload: true
+    state: 'present'
+    sysctl_file: '/etc/sysctl.d/k8s.conf'
+  loop:
+    - 'net.ipv4.ip_forward'
+    - 'net.bridge.bridge-nf-call-ip6tables'
+    - 'net.bridge.bridge-nf-call-iptables'
+  loop_control:
+    loop_var: 'sysctl_key'
+
+- name: 'Install dependency packages'
+  ansible.builtin.package:
+    name:
+      - 'iscsi-initiator-utils'
+      - 'jq'
+      - 'iproute-tc'
+      - 'nfs-utils'
+
+- name: 'Ensure firewall ports'
+  ansible.posix.firewalld:
+    port: "{{ port }}"
+    permanent: true
+    immediate: true
+    state: 'enabled'
+  loop:
+    - '80/tcp'           # HTTP ingress
+    - '443/tcp'          # HTTPS ingress
+    - '2379/tcp'         # etcd server client API
+    - '2380/tcp'         # etcd server client API
+    - '6443/tcp'         # kube-apiserver API
+    - '10250/tcp'        # kubelet API
+    - '10254/tcp'        # kube-scheduler
+    - '30000-32767/tcp'  # NodePort services
+  loop_control:
+    loop_var: 'port'
+
+- name: 'Ensure IP masquerading'
+  ansible.posix.firewalld:
+    masquerade: true
+    state: 'enabled'
+    permanent: true
+
+- name: 'Disable swap on boot'
+  ansible.builtin.lineinfile:
+    path: '/etc/fstab'
+    regexp: 'none *swap'
+    state: 'absent'
+
+- name: 'Disable swap'
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+
+- name: 'Ensure repositories'
+  ansible.builtin.include_tasks:
+    file: 'k8s_repositories.yml'
+  when: k8s_setup_repositories
+
+- name: 'Ensure packages'
+  ansible.builtin.dnf:
+    name:
+      - "kubeadm-{{ k8s_version }}.*"
+      - "kubectl-{{ k8s_version }}.*"
+      - "kubelet-{{ k8s_version }}.*"
+      - 'cri-o'
+    state: 'present'
+    disable_excludes: 'kubernetes'
+
+- name: 'Ensure kubectl completion'
+  ansible.builtin.copy:
+    dest: '/etc/profile.d/kubectl.sh'
+    mode: 0755
+    owner: 'root'
+    group: 'root'
+    content: |
+      # Managed by Ansible, YOUR CHANGES WILL BE LOST!
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+      source <(kubectl completion bash)
+
+- name: 'Ensure services'
+  ansible.builtin.systemd:
+    name: "{{ service }}"
+    state: 'started'
+    enabled: true
+    daemon_reload: true
+  loop:
+    - 'kubelet'
+    - 'crio'
+  loop_control:
+    loop_var: 'service'
+
+- name: 'Make dynamic groups for k8s node role'
+  ansible.builtin.group_by:
+    key: "{{ k8s_cluster_group }}_{{ k8s_role | replace('-', '_') }}"
+  changed_when: false
+
+- name: 'Check for kubelet configuration'
+  ansible.builtin.stat:
+    path: '/var/lib/kubelet/config.yaml'
+    get_checksum: false
+    get_attributes: false
+    get_mime: false
+  register: 'kubelet_conf'
+
+- name: 'Ensure cluster'
+  ansible.builtin.include_tasks:
+    file: 'k8s_init_cluster.yml'
+  when: ansible_facts['fqdn'] == groups[k8s_cluster_group + '_control_plane'] | sort | first
+
+- name: 'Ensure other member nodes'
+  ansible.builtin.include_tasks:
+    file: 'k8s_join_node.yml'
+  when: ansible_facts['fqdn'] != groups[k8s_cluster_group + '_control_plane'] | sort | first
+
+- name: 'Clean up tokens'
+  ansible.builtin.include_tasks:
+    file: 'k8s_clean_tokens.yml'
+  when: ansible_facts['fqdn'] == groups[k8s_cluster_group + '_control_plane'] | sort | first

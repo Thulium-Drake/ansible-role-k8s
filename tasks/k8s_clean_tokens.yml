@@ -1,0 +1,12 @@
+---
+- name: 'List all pending tokens'
+  ansible.builtin.command: kubeadm token list -o jsonpath='{.token} '
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  register: 'k8s_pending_tokens'
+
+- name: 'Delete pending all tokens'
+  ansible.builtin.command: kubeadm token delete {{ k8s_pending_tokens['stdout'] }}
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  when: k8s_pending_tokens | length > 0

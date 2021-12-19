@@ -1,0 +1,64 @@
+---
+- name: 'Process extra kubeadm input - control-plane-endpoint'
+  ansible.builtin.set_fact:
+    k8s_kubeadm_init_args: "{{ k8s_kubeadm_init_args + '--control-plane-endpoint=' + k8s_control_plane_endpoint }}"
+  when: k8s_control_plane_endpoint | length > 0
+
+- name: 'Process extra kubeadm input - apiserver-advertise-address'
+  ansible.builtin.set_fact:
+    k8s_kubeadm_init_args: "{{ k8s_kubeadm_init_args + '--apiserver-advertise-address=' + k8s_apiserver_advertise_address }}"
+  when: k8s_apiserver_advertise_address | length > 0
+
+- name: 'Process extra kubeadm input - pod-network-cidr'
+  ansible.builtin.set_fact:
+    k8s_kubeadm_init_args: "{{ k8s_kubeadm_init_args + '--pod-network-cidr=' + k8s_pod_network_cidr }}"
+  when: k8s_pod_network_cidr | length > 0
+
+- name: 'Process extra kubeadm input - image-repository'
+  ansible.builtin.set_fact:
+    k8s_kubeadm_init_args: "{{ k8s_kubeadm_init_args + '--image-repository=' + k8s_image_repository }}"
+  when: k8s_image_repository | length > 0
+
+- name: 'Initialize cluster'
+  ansible.builtin.command: kubeadm init {{ k8s_kubeadm_init_args }}
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  when: not kubelet_conf['stat']['exists']
+
+- name: 'Upload control-plane certs and generate join key'
+  ansible.builtin.command: kubeadm init phase upload-certs --upload-certs
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  register: 'k8s_join_key'
+
+- name: 'Get control-plane join token'
+  ansible.builtin.command: kubeadm token create --print-join-command --ttl 10m --certificate-key {{ k8s_join_key['stdout_lines'][-1] }}
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  register: 'k8s_control_plane_join_token'
+
+- name: 'Get worker join token'
+  ansible.builtin.command: kubeadm token create --print-join-command --ttl 10m
+  changed_when: true
+  no_log: "{{ not k8s_debug }}"
+  register: 'k8s_worker_join_token'
+
+- name: 'Set join command for worker nodes'
+  ansible.builtin.set_fact:
+    k8s_join_command: "{{ k8s_worker_join_token['stdout'] }}"
+  delegate_to: 'k8s_member'
+  run_once: true
+  no_log: "{{ not k8s_debug }}"
+  loop: "{{ groups[k8s_cluster_group + '_worker'] | default([]) }}"
+  loop_control:
+    loop_var: 'k8s_member'
+
+- name: 'Set join command for control-plane nodes'
+  ansible.builtin.set_fact:
+    k8s_join_command: "{{ k8s_control_plane_join_token['stdout'] }}"
+  delegate_to: 'k8s_controller'
+  run_once: true
+  no_log: "{{ not k8s_debug }}"
+  loop: "{{ groups[k8s_cluster_group + '_control_plane'] | default([]) }}"
+  loop_control:
+    loop_var: 'k8s_controller'
