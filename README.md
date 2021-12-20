@@ -54,3 +54,10 @@ When using multiple control-planes in the cluster, the role will automatically f
 * To be as idempotent as possible the role sorts all nodes in dynamic groups on alphanumerical order
 * When adding additional control-planes, make sure to set their hostnames to be alphanumerically later then existing nodes
 * A multi control-plane cluster requires a load balanced API endpoint
+
+## Notes, tips and tricks
+When installing a CNI plugin (e.g. Calico), delete all then-current running pods in the cluster. This is required to re-assign them new IP addresses that are actually processed properly by the CNI. You can do this as follows:
+```
+kubectl delete pods -A --all
+```
+Afterwards all the pods will respawn with their proper IP address and will have network connectivity.
