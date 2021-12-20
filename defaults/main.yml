@@ -22,5 +22,7 @@ k8s_apiserver_advertise_address: ''  # Instead of using the NIC that has the def
 k8s_pod_network_cidr: ''             # If set, override the default pod network range used
 k8s_control_plane_endpoint: ''       # Required if using multiple control-plane nodes.
                                      # Set to a load balanced URI, e.g. k8s-cluster.example.com:6443
+k8s_cluster_tls: false               # Enables ServerTLSBootstrap for Kubelet, requires SSL certificate
+                                     # either by hand or by some other means (such as kubelet-csr-approver)
 
 k8s_debug: false  # Set to true to log tasks that handle sensitive data

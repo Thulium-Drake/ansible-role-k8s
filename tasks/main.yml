@@ -118,6 +118,7 @@
   loop:
     - 'kubelet'
     - 'crio'
+    - 'iscsid'
   loop_control:
     loop_var: 'service'
 
