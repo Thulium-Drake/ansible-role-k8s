@@ -10,23 +10,12 @@
   when: k8s_apiserver_advertise_address | length > 0
 
 - name: 'Ensure kubeadm init config'
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: 'kubeadm_init_config.yml.j2'
     dest: '/root/kubeadm_init_config.yml'
     owner: 'root'
     group: 'root'
     mode: 0644
-    content: |
-      # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
-      apiVersion: kubeadm.k8s.io/v1beta3
-      kind: ClusterConfiguration
-      ---
-      apiVersion: kubelet.config.k8s.io/v1beta1
-      kind: KubeletConfiguration
-      serverTLSBootstrap: {{ k8s_cluster_tls }}
-      imageRepository: {{ k8s_image_repository | default('k8s.gcr.io') }}
-      networking:
-        serviceSubnet: {{ k8s_pod_network_cidr | default('10.96.0.0/12') }}
-
 
 - name: 'Initialize cluster'
   ansible.builtin.command: kubeadm init --config /root/kubeadm_init_config.yml {{ k8s_kubeadm_init_args }}
