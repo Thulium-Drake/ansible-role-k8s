@@ -16,7 +16,8 @@ k8s_registries: []
 #     validate_certs: true
 
 ## Kubeadm init arguments
-k8s_image_repository: ''             # URL of the private registry to pull images from at initialization
+k8s_image_repository: ''             # URI of the private registry to pull images from at initialization
+                                     # e.g. k8s.gcr.io
 k8s_apiserver_advertise_address: ''  # Instead of using the NIC that has the default gateway, use this IP
                                      # to advertise the k8s API server on
 k8s_pod_network_cidr: ''             # If set, override the default pod network range used
