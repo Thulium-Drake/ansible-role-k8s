@@ -1,5 +1,6 @@
 ---
-k8s_setup_repositories: true   # Set to false if repositories are provided by other means (such as Foreman/Satellite)
+k8s_setup_repositories: true     # Set to false if repositories are provided by other means (such as Foreman/Satellite)
+k8s_repository_id: 'kubernetes'  # Yum ID for the kubernetes repository, only required if k8s_setup_repositories == false
 k8s_version: '1.22'            # Which Kubernetes version to prepare/install
 
 k8s_role: 'control-plane'      # control-plane or worker

@@ -96,7 +96,7 @@
       - "kubelet-{{ k8s_version }}.*"
       - 'cri-o'
     state: 'present'
-    disable_excludes: 'kubernetes'
+    disable_excludes: "{{ k8s_repository_id }}"
 
 - name: 'Ensure kubectl completion'
   ansible.builtin.copy:
