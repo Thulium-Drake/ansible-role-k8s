@@ -47,6 +47,7 @@
       - 'jq'
       - 'iproute-tc'
       - 'nfs-utils'
+      - 'bash-completion'
 
 - name: 'Ensure firewall ports'
   ansible.posix.firewalld:
