@@ -6,19 +6,22 @@ k8s_version: '1.22'            # Which Kubernetes version to prepare/install
 k8s_role: 'control-plane'      # control-plane or worker
 k8s_cluster_group: 'k8s_cluster'     # Inventory group that contains all nodes of this cluster
 
+# The following setting allows to remap public registries to private mirrors
 k8s_registries: []
-#   - name: 'example-registry'
-#     url: 'https://registry.example.com:5000'
-#     username: 'RobotRock'
-#     password: 'AroundtheKube'
-#     client_certificate: '/etc/ssl/certs/k8s-client.pem'
-#     client_certificate_key: '/etc/ssl/private/k8s-client.key'
-#     ca_certificate: '/etc/ssl/certs/example_ca.pem'
-#     validate_certs: true
+#   - prefix: 'docker.io'               # Registry name
+#     location: 'registry.example.com'  # Private mirror
+#     validate_certs: true              # Validate SSL certificates, defaults to true
+#     blocked: false                    # If true, this repository is disabled in CRI-O, defaults to false
+
+# The following registries can be searched without full image names
+# e.g. docker.io/namespace/my-image:v2
+k8s_unqualified_search_registries:
+  - 'registry.fedoraproject.org'
+  - 'registry.access.redhat.com'
+  - 'registry.centos.org'
+  - 'docker.io'
 
 ## Kubeadm init arguments
-k8s_image_repository: ''             # URI of the private registry to pull images from at initialization
-                                     # e.g. k8s.gcr.io
 k8s_apiserver_advertise_address: ''  # Instead of using the NIC that has the default gateway, use this IP
                                      # to advertise the k8s API server on
 k8s_pod_network_cidr: ''             # If set, override the default pod network range used

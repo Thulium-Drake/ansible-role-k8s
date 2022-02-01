@@ -110,6 +110,14 @@
       export KUBECONFIG=/etc/kubernetes/admin.conf
       source <(kubectl completion bash)
 
+- name: 'Ensure CRI-O registry configuration'
+  ansible.builtin.template:
+    src: 'registries.conf.j2'
+    dest: '/etc/containers/registries.conf'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+
 - name: 'Ensure services'
   ansible.builtin.systemd:
     name: "{{ service }}"

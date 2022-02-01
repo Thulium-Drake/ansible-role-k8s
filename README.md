@@ -5,10 +5,10 @@ It provides a cluster for the following scenarios:
 
 * Multiple control_planes with (or without) workers
 * Single control_plane with workers
+* Remapping public repositories to private mirrors (NOTE: authentication is currently not supported)
 
 Missing features:
 
-* Configuring private repositories beyond initial kubeadm setup
 * Removing nodes
 
 ## Setup

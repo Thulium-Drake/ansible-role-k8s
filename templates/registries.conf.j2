@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+unqualified-search-registries = {{ k8s_unqualified_search_registries | to_json }}
+
+{% for registry in k8s_registries %}
+[[registry]]
+prefix = "{{ registry['prefix'] }}"
+location = "{{ registry['location'] }}"
+insecure = {{ not registry['validate_certs'] | default('true') }}
+blocked = {{ registry['blocked'] | default('false') }}
+
+{% endfor %}

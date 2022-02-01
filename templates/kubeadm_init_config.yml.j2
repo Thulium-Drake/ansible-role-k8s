@@ -1,11 +1,8 @@
 # {{ ansible_managed }}
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
-imageRepository: {{ k8s_image_repository | default('k8s.gcr.io', true) }}
 networking:
   serviceSubnet: {{ k8s_pod_network_cidr | default('10.96.0.0/12', true) }}
-dns:
-  imageRepository: {{ k8s_image_repository | default('k8s.gcr.io', true) }}/coredns
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
