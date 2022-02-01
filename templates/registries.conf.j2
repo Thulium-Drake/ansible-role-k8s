@@ -6,7 +6,7 @@ unqualified-search-registries = {{ k8s_unqualified_search_registries | to_json }
 [[registry]]
 prefix = "{{ registry['prefix'] }}"
 location = "{{ registry['location'] }}"
-insecure = {{ not registry['validate_certs'] | default('true') | lower }}
-blocked = {{ registry['blocked'] | default('false')  | lower }}
+insecure = {{ (not registry['validate_certs'] | default('true')) | lower }}
+blocked = {{ (registry['blocked'] | default('false')) | lower }}
 
 {% endfor %}
