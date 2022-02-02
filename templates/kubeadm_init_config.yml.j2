@@ -2,7 +2,7 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 networking:
-  serviceSubnet: {{ k8s_pod_network_cidr | default('10.96.0.0/12', true) }}
+  serviceSubnet: {{ k8s_pod_network_cidr }}
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
