@@ -48,6 +48,12 @@
       - 'iproute-tc'
       - 'nfs-utils'
       - 'bash-completion'
+      - 'python3-pip'
+
+- name: 'Ensure Kubernetes Python module'
+  ansible.builtin.pip:
+    name: 'kubernetes>11.0.0'
+    state: 'present'
 
 - name: 'Ensure firewall ports'
   ansible.posix.firewalld:
