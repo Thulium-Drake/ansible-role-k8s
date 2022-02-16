@@ -30,5 +30,11 @@ k8s_control_plane_endpoint: ''           # Required if using multiple control-pl
                                          # Set to a load balanced URI, e.g. k8s-cluster.example.com:6443
 k8s_cluster_tls: false                   # Enables ServerTLSBootstrap for Kubelet, requires SSL certificate
                                          # either by hand or by some other means (such as kubelet-csr-approver)
+## External Etcd settings
+k8s_external_etcd:
+  endpoints: []   # List of endpoints that host etcd, if not defined, kubeadm uses internal etcd instances
+  ca_file: ''     # CA certificate that signed the etcd client certificate
+  cert_file: ''   # Etcd client certficate for K8s apiserver
+  key_file: ''    # Key for the client certificate
 
 k8s_debug: false  # Set to true to log tasks that handle sensitive data
