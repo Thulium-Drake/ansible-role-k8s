@@ -55,6 +55,14 @@ When using multiple control-planes in the cluster, the role will automatically f
 * When adding additional control-planes, make sure to set their hostnames to be alphanumerically later then existing nodes
 * A multi control-plane cluster requires a load balanced API endpoint
 
+## External Etcd instances
+The role can aid you in setting up a cluster that uses external etcd, this role however does _not_ set up the etcd cluster. In order to use it you need to:
+
+* Set up the cluster certificates, for more info see: https://kubernetes.io/docs/setup/best-practices/certificates/
+* Set up the external etcd cluster
+* Configure this role
+* Run Ansible
+
 ## Notes, tips and tricks
 When installing a CNI plugin (e.g. Calico), delete all then-current running pods in the cluster. This is required to re-assign them new IP addresses that are actually processed properly by the CNI. You can do this as follows:
 ```
