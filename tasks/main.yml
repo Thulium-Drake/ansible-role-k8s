@@ -55,30 +55,32 @@
     name: 'kubernetes>11.0.0'
     state: 'present'
 
-- name: 'Ensure firewall ports'
-  ansible.posix.firewalld:
-    port: "{{ port }}"
-    permanent: true
-    immediate: true
-    state: 'enabled'
-  loop:
-    - '80/tcp'           # HTTP ingress
-    - '443/tcp'          # HTTPS ingress
-    - '2379/tcp'         # etcd server client API
-    - '2380/tcp'         # etcd server client API
-    - '6443/tcp'         # kube-apiserver API
-    - '10250/tcp'        # kubelet API
-    - '10254/tcp'        # kube-scheduler
-    - '30000-32767/tcp'  # NodePort services
-  loop_control:
-    loop_var: 'port'
+- name: 'Configure Firewalld'
   when: ansible_facts['services']['firewalld.service']['status'] == 'enabled'
+  block:
+    - name: 'Ensure firewall ports'
+      ansible.posix.firewalld:
+        port: "{{ port }}"
+        permanent: true
+        immediate: true
+        state: 'enabled'
+      loop:
+        - '80/tcp'           # HTTP ingress
+        - '443/tcp'          # HTTPS ingress
+        - '2379/tcp'         # etcd server client API
+        - '2380/tcp'         # etcd server client API
+        - '6443/tcp'         # kube-apiserver API
+        - '10250/tcp'        # kubelet API
+        - '10254/tcp'        # kube-scheduler
+        - '30000-32767/tcp'  # NodePort services
+      loop_control:
+        loop_var: 'port'
 
-- name: 'Ensure IP masquerading'
-  ansible.posix.firewalld:
-    masquerade: true
-    state: 'enabled'
-    permanent: true
+    - name: 'Ensure IP masquerading'
+      ansible.posix.firewalld:
+        masquerade: true
+        state: 'enabled'
+        permanent: true
 
 - name: 'Disable swap'
   when: k8s_version is version('1.22', '<=')
