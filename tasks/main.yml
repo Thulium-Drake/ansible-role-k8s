@@ -80,15 +80,18 @@
     state: 'enabled'
     permanent: true
 
-- name: 'Disable swap on boot'
-  ansible.builtin.lineinfile:
-    path: '/etc/fstab'
-    regexp: 'none *swap'
-    state: 'absent'
-
 - name: 'Disable swap'
-  ansible.builtin.command: swapoff -a
-  changed_when: false
+  when: k8s_version is version('1.22', '<=')
+  block:
+    - name: 'Disable swap on boot'
+      ansible.builtin.lineinfile:
+        path: '/etc/fstab'
+        regexp: 'none *swap'
+        state: 'absent'
+
+    - name: 'Disable swap'
+      ansible.builtin.command: swapoff -a
+      changed_when: false
 
 - name: 'Ensure repositories'
   ansible.builtin.include_tasks:
