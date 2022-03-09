@@ -162,11 +162,11 @@
     mode: 0644
     owner: 'root'
     group: 'root'
-    notify: 'restart networkmanager'
     content: |
       # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
       [keyfile]
       unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:wireguard.cali
+  notify: 'restart networkmanager'
 
 - name: 'Ensure cluster'
   ansible.builtin.include_tasks:
