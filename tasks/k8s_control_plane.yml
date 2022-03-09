@@ -1,0 +1,12 @@
+---
+- name: 'Ensure yum tools'
+  ansible.builtin.package:
+    name:
+      - 'git'
+      - 'python3-pip'
+    state: 'present'
+
+- name: 'Ensure Kubernetes Python module'
+  ansible.builtin.pip:
+    name: 'kubernetes>11.0.0'
+    state: 'present'

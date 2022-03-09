@@ -120,6 +120,7 @@
       # Managed by Ansible, YOUR CHANGES WILL BE LOST!
       export KUBECONFIG=/etc/kubernetes/admin.conf
       source <(kubectl completion bash)
+      command -v helm && <(helm completion bash)
 
 - name: 'Ensure CRI-O registry configuration'
   ansible.builtin.template:
@@ -155,6 +156,18 @@
     get_mime: false
   register: 'kubelet_conf'
 
+- name: 'Ensure NetworkManager is prepared to ignore calico interfaces'
+  ansible.builtin.copy:
+    dest: '/etc/NetworkManager/conf.d/calico.conf'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+    notify: 'restart networkmanager'
+    content: |
+      # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
+      [keyfile]
+      unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:wireguard.cali
+
 - name: 'Ensure cluster'
   ansible.builtin.include_tasks:
     file: 'k8s_init_cluster.yml'
@@ -169,3 +182,8 @@
   ansible.builtin.include_tasks:
     file: 'k8s_clean_tokens.yml'
   when: ansible_facts['fqdn'] == groups[k8s_cluster_group + '_control_plane'] | sort | first
+
+- name: 'Ensure tools on Control plane'
+  ansible.builtin.include_tasks:
+    file: 'k8s_control_plane.yml'
+  when: k8s_role == 'control-plane'
