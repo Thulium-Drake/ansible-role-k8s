@@ -69,3 +69,18 @@ When installing a CNI plugin (e.g. Calico), delete all then-current running pods
 kubectl delete pods -A --all
 ```
 Afterwards all the pods will respawn with their proper IP address and will have network connectivity.
+
+### Etcdctl function
+If your system does not come with a etcdctl package, you can also use the function below. Which will enter one of the containers running etcd and query the information from there.
+```
+function etcdctl {
+    [ -z "$ETCDPOD" ] && ETCDPOD=$( kubectl get -n kube-system pod -l component=etcd -o name  | sed 's?^pod/??' )
+    #kubectl get -n kube-system pod -o name  | sed 's?^pod/??' | grep -m 1 ^etcd
+    [ -z "$ETCDPOD" ] && {
+        echo "Failed to find etcd Pod"
+        return 1
+    }
+
+    kubectl -n kube-system exec -it $ETCDPOD  -c etcd -- /bin/sh -c "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt ETCDCTL_CERT=/etc/kubernetes/pki/etcd/server.crt ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key etcdctl --endpoints=https://127.0.0.1:2379 $*";
+}
+```
