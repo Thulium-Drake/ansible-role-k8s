@@ -20,14 +20,14 @@
 - name: 'Ensure kernel modules at bootup'
   ansible.builtin.copy:
     dest: '/etc/modules-load.d/k8s.conf'
-    mode: 0444
+    mode: '0444'
     content: |
       # Managed by Ansible, YOUR CHANGES WILL BE LOST!
       overlay
       br_netfilter
 
 - name: 'Ensure sysctl'
-  ansible.builtin.sysctl:
+  ansible.posix.sysctl:
     name: "{{ sysctl_key }}"
     value: 1
     reload: true
@@ -113,7 +113,7 @@
 - name: 'Ensure kubectl completion'
   ansible.builtin.copy:
     dest: '/etc/profile.d/kubectl.sh'
-    mode: 0755
+    mode: '0755'
     owner: 'root'
     group: 'root'
     content: |
@@ -126,7 +126,7 @@
   ansible.builtin.template:
     src: 'registries.conf.j2'
     dest: '/etc/containers/registries.conf'
-    mode: 0644
+    mode: '0644'
     owner: 'root'
     group: 'root'
 
@@ -159,14 +159,14 @@
 - name: 'Ensure NetworkManager is prepared to ignore calico interfaces'
   ansible.builtin.copy:
     dest: '/etc/NetworkManager/conf.d/calico.conf'
-    mode: 0644
+    mode: '0644'
     owner: 'root'
     group: 'root'
     content: |
       # This file is managed by Ansible, YOUR CHANGES WILL BE LOST!
       [keyfile]
       unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:wireguard.cali
-  notify: 'restart networkmanager'
+  notify: 'Restart networkmanager'
 
 - name: 'Ensure cluster'
   ansible.builtin.include_tasks:

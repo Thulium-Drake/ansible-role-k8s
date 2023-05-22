@@ -15,7 +15,7 @@
     dest: '/root/kubeadm_init_config.yml'
     owner: 'root'
     group: 'root'
-    mode: 0644
+    mode: '0644'
 
 - name: 'Initialize cluster'
   ansible.builtin.command: kubeadm init --config /root/kubeadm_init_config.yml {{ k8s_kubeadm_init_args }}
